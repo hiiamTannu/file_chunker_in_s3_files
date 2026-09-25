@@ -1,0 +1,43 @@
+name: Run S3 File Chunker
+
+on:
+  # Allows manual triggering from the GitHub Actions tab
+  workflow_dispatch:
+  
+  # Optional: Uncomment below to run on a schedule (e.g., every day at midnight UTC)
+  # schedule:
+  #   - cron: '0 0 * * *'
+
+jobs:
+  chunk-file:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Checkout your repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Python environment
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. Install required Python dependencies
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas s3fs
+
+      # 4. Configure AWS Credentials using GitHub Secrets
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 5. Run the Python chunking script
+      - name: Run Chunker Script
+        run: |
+          python file_chunker_python.py
